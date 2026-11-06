@@ -10,8 +10,9 @@ being evaluated. This module implements a variant that can be used as a method:
   * after training task k, freeze the backbone;
   * re-align only the LM head, once per checkpoint, on a small replay buffer
     drawn from the training loaders of the seen tasks 0..k (including the
-    current task k). Per task, the buffer holds `jlt_posthoc_per_class`
-    examples per class (default 1), rounded up to whole batches;
+    current task k). Per task, the buffer takes `jlt_posthoc_per_class`
+    (default 1) x the number of classes examples from the shuffled training
+    loader, rounded up to whole batches;
   * evaluate all tasks with this single head;
   * restore the original head afterwards, so the incremental-learning
     trajectory is unchanged.

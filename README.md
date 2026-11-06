@@ -165,7 +165,7 @@ to log online.
 | `--skip_online_clustering` | skip the online clustering diagnostic (when it is computed offline) |
 | `--dump_task_features` | dump backbone test features of all tasks at every task boundary for the offline diagnostics |
 | `--lm_head_finetune` | task-adaptive JLT: before each task is evaluated, the backbone is frozen and only the LM head is re-aligned on that task's training split (recoverability diagnostic) |
-| `--jlt_posthoc` | post-hoc JLT: the LM head is re-aligned once per checkpoint on a replay buffer with `--jlt_posthoc_per_class` examples per class of every seen task, then restored (standard CIL evaluation) |
+| `--jlt_posthoc` | post-hoc JLT: the LM head is re-aligned once per checkpoint on a small replay buffer that takes `--jlt_posthoc_per_class` x (number of classes) examples from the training loader of every seen task, rounded up to whole batches, then restored (standard CIL evaluation) |
 | `--lm_head_lr`, `--lm_head_epochs` | JLT learning rate (default 5e-4) and epochs (default 3) |
 | `--is_replay True --Replay_fix_budge_each_class True --Replay_buffer_size <#classes>` | ER with one stored example per class (use with `SEQ_full.yaml`) |
 | `--il_mode TIL` | task-incremental evaluation (use the configurations under `config/TIL/`) |
@@ -200,7 +200,7 @@ python main_CL.py --exp_prefix jlt \
     --backbone meta-llama/Llama-3.2-1B --classifier None --training_epochs 5 --seed 1 \
     --lm_head_finetune --lm_head_lr 5e-4 --lm_head_epochs 3
 
-# Post-hoc JLT (one replay example per class)
+# Post-hoc JLT (buffer of roughly one example per class)
 python main_CL.py --exp_prefix posthoc \
     --cfg ./config/CIL/generative_backbones/tacred_task8/SEQ_full.yaml \
     --backbone meta-llama/Llama-3.2-1B --classifier None --training_epochs 5 --seed 1 \
@@ -300,8 +300,8 @@ PCLL ([DAMO-ConvAI/pcll](https://github.com/AlibabaResearch/DAMO-ConvAI/tree/mai
 and the FewRel/TACRED label mapping follows [VAG](https://github.com/shaoyijia/VAG).
 See [NOTICE](NOTICE) for details.
 
-This work was supported by the Institute of Information and communications Technology Planning and
-evaluation (IITP) grant (No. RS-2025-25422680, No. RS-2020-II201373), and the National Research
+This work was supported by the Institute of Information & Communications Technology Planning &
+Evaluation (IITP) grant (No. RS-2025-25422680, No. RS-2020-II201373), and the National Research
 Foundation of Korea (NRF) grant (No. RS-2025-00520618) funded by the Korean Government (MSIT).
 
 ## License
