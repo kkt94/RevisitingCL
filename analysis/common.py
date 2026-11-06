@@ -16,7 +16,6 @@ import glob
 import json
 
 import numpy as np
-from scipy import stats
 
 NUM_RE = r'[-+]?\d+(?:\.\d*)?(?:[eE][-+]?\d+)?'
 
@@ -136,64 +135,3 @@ def bwt_fwt(M):
     bwt = np.nanmean([M[T - 1, i] - M[i, i] for i in range(T - 1)])
     fwt = np.nanmean([M[i, i] - M[i - 1, i] for i in range(1, T)])
     return float(bwt), float(fwt)
-
-
-def terms(M):
-    """A = mean final row, B = mean diagonal, C = mean pre-task row.
-
-    BWT = A - B and FWT = B - C share B; A and C share nothing with FWT and
-    BWT respectively.
-    """
-    T = M.shape[0]
-    A = np.nanmean([M[T - 1, i] for i in range(T - 1)])
-    B1 = np.nanmean([M[i, i] for i in range(T - 1)])
-    B2 = np.nanmean([M[i, i] for i in range(1, T)])
-    C = np.nanmean([M[i - 1, i] for i in range(1, T)])
-    return A, (B1 + B2) / 2, C
-
-
-# --------------------------------------------------------------------------
-# statistics
-# --------------------------------------------------------------------------
-def _rowcorr(X, Y):
-    X = X - X.mean(1, keepdims=True)
-    Y = Y - Y.mean(1, keepdims=True)
-    return (X * Y).sum(1) / np.sqrt((X * X).sum(1) * (Y * Y).sum(1))
-
-
-def partial_corr(x, y, z):
-    """Pearson correlation of x and y after removing the linear effect of z."""
-    Z = np.vstack([np.ones_like(z), z]).T
-
-    def resid(v):
-        beta, *_ = np.linalg.lstsq(Z, v, rcond=None)
-        return v - Z @ beta
-
-    rx, ry = resid(x), resid(y)
-    if rx.std() < 1e-12 or ry.std() < 1e-12:
-        return np.nan, np.nan
-    return stats.pearsonr(rx, ry)
-
-
-def perm_null(A, B, C, n=20000, seed=0):
-    """Null distribution of corr(A - B, B - C) when only the shared term B is
-    permuted across units. Returns (observed r, null mean, null 5th percentile,
-    P(null <= observed))."""
-    rng = np.random.RandomState(seed)
-    obs = stats.pearsonr(A - B, B - C)[0]
-    P = np.stack([rng.permutation(len(B)) for _ in range(n)])
-    Bp = B[P]
-    null = _rowcorr(A[None, :] - Bp, Bp - C[None, :])
-    return obs, float(null.mean()), float(np.percentile(null, 5)), float((null <= obs).mean())
-
-
-def boot_ci(x, y, n=20000, seed=0):
-    """95% percentile bootstrap CI of the Pearson correlation, resampling units."""
-    rng = np.random.RandomState(seed)
-    ok = np.isfinite(x) & np.isfinite(y)
-    x, y = x[ok], y[ok]
-    idx = np.stack([rng.randint(0, len(x), len(x)) for _ in range(n)])
-    X, Y = x[idx], y[idx]
-    good = (X.std(1) >= 1e-9) & (Y.std(1) >= 1e-9)
-    r = _rowcorr(X[good], Y[good])
-    return float(np.percentile(r, 2.5)), float(np.percentile(r, 97.5))

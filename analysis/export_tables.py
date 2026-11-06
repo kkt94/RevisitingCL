@@ -11,11 +11,10 @@ Outputs (in --outdir):
                          base Spectral configuration and every clustering-free
                          diagnostic (both normalizations)
   units_long.csv         the same in long format, for every diagnostic series
-  coupling.csv           for every series and unit subset: Pearson / Spearman r,
-                         T1 = corr(A, FWT), T2 = partial corr(BWT, FWT | B),
-                         the shared-term permutation null and a bootstrap CI
+  correlations.csv       for every series and unit subset: Pearson / Spearman r
+                         between BWT and FWT
   sensitivity_grid.csv   per-unit BWT/FWT for every clustering configuration
-  summary.txt            the main tables in readable form
+  summary.txt            BWT-FWT correlations by unit subset in readable form
 
 A unit is one (backbone, dataset, method) combination. Post-hoc JLT runs share
 the backbone trajectory of their standard run and are excluded. When the same
@@ -35,11 +34,11 @@ from scipy import stats
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from analysis.common import (find_runs, run_info, unit_key, parse_head_matrix, load_diag,
-                             to_matrix, bwt_fwt, terms, partial_corr, perm_null, boot_ci)
+                             to_matrix, bwt_fwt)
 
 SPECTRAL_BASE = ('algo=spectral|balance=natural|k_mult=1.0|'
                  'matching=hungarian|nmax=1500|norm=none|seed=0')
-CLUSTERFREE = ('NCM', 'kNN1', 'kNN10', 'Silhouette', 'Fisher', 'RidgeProbe')
+CLUSTERFREE = ('NCM', 'kNN1', 'kNN10', 'Silhouette', 'Fisher')
 PEFT_METHODS = ('LoRA', 'PromptTuning')
 
 
@@ -72,28 +71,22 @@ def build_series(units, diag):
     return series
 
 
-def subset_stats(mats, tags, nperm, nboot):
+def subset_stats(mats, tags):
     rows = []
     for t in tags:
         if t not in mats:
             continue
         b, f = bwt_fwt(mats[t])
-        A, B, C = terms(mats[t])
-        if np.all(np.isfinite([b, f, A, B, C])):
-            rows.append((b, f, A, B, C))
+        if np.isfinite(b) and np.isfinite(f):
+            rows.append((b, f))
     out = dict(n=len(rows))
     if len(rows) < 5:
         return out
-    bwt, fwt, A, B, C = np.array(rows).T
-    if min(bwt.std(), fwt.std(), A.std(), B.std()) < 1e-9:
+    bwt, fwt = np.array(rows).T
+    if min(bwt.std(), fwt.std()) < 1e-9:
         return out
     out['r'], out['p_r'] = stats.pearsonr(bwt, fwt)
     out['spearman'] = stats.spearmanr(bwt, fwt)[0]
-    out['T1'], out['p_T1'] = stats.pearsonr(A, fwt)
-    out['T2'], out['p_T2'] = partial_corr(bwt, fwt, B)
-    obs, null_mean, null_p5, p = perm_null(A, B, C, n=nperm)
-    out.update(perm_r_obs=obs, perm_null_mean=null_mean, perm_null_p5=null_p5, perm_p=p)
-    out['boot_lo'], out['boot_hi'] = boot_ci(bwt, fwt, n=nboot)
     return out
 
 
@@ -121,8 +114,6 @@ def main():
     ap.add_argument('--exp_root', default='experiments')
     ap.add_argument('--tag_glob', default='*')
     ap.add_argument('--outdir', default='outputs/tables')
-    ap.add_argument('--nperm', type=int, default=20000)
-    ap.add_argument('--nboot', type=int, default=20000)
     a = ap.parse_args()
     os.makedirs(a.outdir, exist_ok=True)
 
@@ -170,18 +161,16 @@ def main():
                 w.writerow([t, u['backbone'], u['dataset'], u['method'], u['family'], *key,
                             fmt(np.nanmean(M[-1]), '%.2f'), fmt(b, '%.2f'), fmt(f, '%.2f')])
 
-    # ---------------- coupling statistics ----------------------------------
+    # ---------------- BWT-FWT correlations ---------------------------------
     subsets = define_subsets(units, order)
-    fields = ['subset', 'kind', 'config', 'metric', 'n', 'r', 'p_r', 'spearman',
-              'T1', 'p_T1', 'T2', 'p_T2', 'perm_r_obs', 'perm_null_mean',
-              'perm_null_p5', 'perm_p', 'boot_lo', 'boot_hi']
+    fields = ['subset', 'kind', 'config', 'metric', 'n', 'r', 'p_r', 'spearman']
     results = {}
-    with open(os.path.join(a.outdir, 'coupling.csv'), 'w', newline='') as f:
+    with open(os.path.join(a.outdir, 'correlations.csv'), 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         for sname, tags in subsets.items():
             for key in sorted(series, key=str):
-                st = subset_stats(series[key], tags, a.nperm, a.nboot)
+                st = subset_stats(series[key], tags)
                 results[(sname,) + key] = st
                 rec = dict(subset=sname, kind=key[0], config=key[1], metric=key[2])
                 rec.update({k: (fmt(v) if isinstance(v, (float, np.floating)) else v)
@@ -216,26 +205,6 @@ def main():
         r = [results[(sname,) + k].get('r', np.nan) for k in (spectral, ncm, head_key)]
         n = results[(sname,) + spectral]['n']
         emit('%-36s %4d %10s %10s %10s' % (sname, n, *[fmt(v, '%+.3f') for v in r]))
-    for sname in subsets:
-        emit('')
-        emit('[%s] T1 / T2 / permutation null / bootstrap CI' % sname)
-        emit('%-64s %4s %7s %7s %7s %8s %17s' % ('series', 'n', 'r', 'T1', 'T2', 'null', '95% CI'))
-        for key in sorted(series, key=str):
-            if key[0] == 'cluster' and key[1] != SPECTRAL_BASE:
-                continue
-            st = results[(sname,) + key]
-            if 'r' not in st:
-                continue
-            emit('%-64s %4d %7.3f %7.3f %7.3f %8.3f   [%6.3f, %6.3f]' %
-                 (('%s %s %s' % key)[:64], st['n'], st['r'], st['T1'], st['T2'],
-                  st['perm_null_mean'], st['boot_lo'], st['boot_hi']))
-        cl = [results[(sname,) + k] for k in series if k[0] == 'cluster']
-        cl = [s for s in cl if 'r' in s]
-        if cl:
-            emit('clustering series: %d | r<0: %d | T1<0: %d (p<.05: %d) | T2<0: %d (p<.05: %d)' % (
-                len(cl), sum(s['r'] < 0 for s in cl),
-                sum(s['T1'] < 0 for s in cl), sum(s['p_T1'] < 0.05 for s in cl),
-                sum(s['T2'] < 0 for s in cl), sum(s['p_T2'] < 0.05 for s in cl)))
     text = '\n'.join(lines)
     print(text)
     with open(os.path.join(a.outdir, 'summary.txt'), 'w') as f:

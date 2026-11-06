@@ -42,7 +42,6 @@ class FakeLearner:
 
 learner = FakeLearner()
 head = model.get_output_embeddings()
-emb = model.get_input_embeddings()
 before_head = head.weight.detach().clone()
 body = {n: p.detach().clone() for n, p in model.named_parameters()
         if 'wte' not in n and 'lm_head' not in n}
@@ -57,10 +56,6 @@ for n, p in model.named_parameters():
         assert torch.equal(body[n], p.detach()), 'FAIL: backbone param %s changed' % n
 print('OK  head updated, backbone unchanged  (max head delta %.3e)'
       % (after_head - before_head).abs().max())
-
-tied = emb.weight.data_ptr() == head.weight.data_ptr()
-print('NOTE tie_word_embeddings =', tied,
-      '-> head tuning also moves the input embedding' if tied else '')
 
 posthoc_restore_head(state)
 assert torch.equal(head.weight.detach(), before_head), 'FAIL: head not restored'

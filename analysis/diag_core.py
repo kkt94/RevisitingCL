@@ -9,10 +9,9 @@ representations, and no configuration requires re-training.
 clustering  : unsupervised clustering + cluster-to-label matching, with options
               for algorithm, feature normalization, cluster count, seed,
               matching scheme, class balance and sample size
-clusterfree : NCM, kNN-1/10, ridge probe, silhouette and Fisher ratio; no
-              cluster count, no random initialization, no label matching.
-              NCM, kNN and the ridge probe use a fixed stratified 50/50 split
-              of the test features.
+clusterfree : NCM, kNN-1/10, silhouette and Fisher ratio; no cluster count,
+              no random initialization, no label matching. NCM and kNN use a
+              fixed stratified 50/50 split of the test features.
 """
 
 import os
@@ -167,8 +166,8 @@ def _split_half(y, rng):
     return np.concatenate(a), np.concatenate(b)
 
 
-def clusterfree_scores(feats, labs, meta, norm='l2', seed=0, ridge_lambda=1e-2):
-    """NCM / kNN-1 / kNN-10 / ridge-probe / silhouette / Fisher ratio."""
+def clusterfree_scores(feats, labs, meta, norm='l2', seed=0):
+    """NCM / kNN-1 / kNN-10 / silhouette / Fisher ratio."""
     T = meta['num_task']
     X = np.concatenate(feats, 0)
     y = np.concatenate(labs, 0)
@@ -178,7 +177,6 @@ def clusterfree_scores(feats, labs, meta, norm='l2', seed=0, ridge_lambda=1e-2):
     rng = np.random.RandomState(999 + seed)
     fit, ev = _split_half(y, rng)
     classes = np.unique(y)
-    cidx = {c: i for i, c in enumerate(classes)}
 
     # nearest class mean
     M = np.stack([X[fit][y[fit] == c].mean(0) for c in classes])
@@ -201,25 +199,15 @@ def clusterfree_scores(feats, labs, meta, norm='l2', seed=0, ridge_lambda=1e-2):
     knn1 = knn_pred(1)
     knn10 = knn_pred(10)
 
-    # ridge (least-squares) linear probe, closed form -> deterministic
-    Xf = X[fit]
-    Yf = np.zeros((len(Xf), len(classes)), dtype=np.float32)
-    Yf[np.arange(len(Xf)), [cidx[c] for c in yf]] = 1.0
-    d = Xf.shape[1]
-    A = Xf.T @ Xf + ridge_lambda * len(Xf) * np.eye(d, dtype=np.float32)
-    W = np.linalg.solve(A, Xf.T @ Yf)
-    probe_pred = classes[np.argmax(Xe @ W, axis=1)]
-
     te = task_of[ev]
     out = {k: np.full(T, np.nan) for k in
-           ('NCM', 'kNN1', 'kNN10', 'RidgeProbe', 'Silhouette', 'Fisher')}
+           ('NCM', 'kNN1', 'kNN10', 'Silhouette', 'Fisher')}
     for t in range(T):
         sel = te == t
         if sel.sum() >= 1:
             out['NCM'][t] = float(np.mean(ncm_pred[sel] == y[ev][sel]) * 100)
             out['kNN1'][t] = float(np.mean(knn1[sel] == y[ev][sel]) * 100)
             out['kNN10'][t] = float(np.mean(knn10[sel] == y[ev][sel]) * 100)
-            out['RidgeProbe'][t] = float(np.mean(probe_pred[sel] == y[ev][sel]) * 100)
 
         # label-aware, training-free geometry of task t
         s = task_of == t

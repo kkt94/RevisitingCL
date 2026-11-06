@@ -12,8 +12,7 @@ mkdir -p "$OUT"
 # 1) every clustering and clustering-free diagnostic, per checkpoint and task
 python analysis/run_diag.py --exp_root "$EXP" --out "$OUT/diag.csv" --workers "$WORKERS"
 
-# 2) per-unit BWT/FWT, coupling-free tests, permutation null, bootstrap CIs,
-#    sensitivity grid
+# 2) per-unit BWT/FWT, BWT-FWT correlations per unit subset, sensitivity grid
 python analysis/export_tables.py --diag "$OUT/diag.csv" --exp_root "$EXP" --outdir "$OUT/tables"
 
 # 3) head-interface metrics and post-hoc JLT comparison
