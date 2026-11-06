@@ -3,13 +3,13 @@
 
 """
 JLT decomposition of Section 6, computed from the per-stream results of
-Appendix Table 14 (three decoder backbones x five streams).
+Appendix Tables 16-17 (three decoder backbones x five streams).
 
   A_joint - A_std = (A_JLT - A_std) + (A_joint - A_JLT)
                     readout-recoverable   residual
 
 Prints the aggregate decomposition (Table 3), the residual per stream and the
-change in operational FWT under task-adaptive JLT (Table 15).
+change in operational FWT under task-adaptive JLT (Table 18).
 
 Usage:
     python analysis/jlt_decomposition.py
@@ -19,7 +19,7 @@ import numpy as np
 
 DATASETS = ['Tacred', 'Banking77', 'Clinc150', 'Fewrel', 'Topic3']
 
-# (A_T, BWT, FWT) per stream, from Appendix Table 14. "Joint" is A_T of joint fine-tuning.
+# (A_T, BWT, FWT) per stream, from Appendix Tables 16-17. "Joint" is A_T of joint fine-tuning.
 TABLE14 = {
     'Pythia-410M': {
         'Joint': [98.99, 95.66, 96.33, 95.35, 95.50],
@@ -92,8 +92,8 @@ for method in METHODS:
            a[:, 3].mean(), a[:, 4].mean(), a[:, 5].mean()))
     line('.')
 
-# Table 15, top
-print('\n### Table 15 (top): residual gap A_joint - A_JLT per stream')
+# Table 18, top
+print('\n### Table 18 (top): residual gap A_joint - A_JLT per stream')
 print('    A large residual is not recovered by head re-alignment alone.')
 line()
 for method in METHODS:
@@ -104,8 +104,8 @@ for method in METHODS:
         print('  %-14s %s' % (model, ' '.join('%10.2f' % v for v in res)))
     line('.')
 
-# Table 15, bottom
-print('\n### Table 15 (bottom): change in operational FWT under task-adaptive JLT')
+# Table 18, bottom
+print('\n### Table 18 (bottom): change in operational FWT under task-adaptive JLT')
 print('    Under JLT both a_{i,i} and a_{i-1,i} are measured with an aligned head, so the')
 print('    gain from creating an output interface for unseen labels is excluded.')
 line()

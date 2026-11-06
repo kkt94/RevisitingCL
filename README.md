@@ -1,4 +1,4 @@
-# [NeurIPS 2026] Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity
+# [NeurIPS 2026] Revisiting Continual Learning in Language Models: A Three-Interface Diagnosis of Stability and Plasticity
 
 > Keuntae Kim\*, Beomseok Lee\*, Hyunwoo Kim\*, Yong Suk Choi&dagger;
 >
@@ -7,7 +7,7 @@
 > \*: Equal contribution, &dagger;: Corresponding author
 
 This is the official code of the NeurIPS 2026 paper
-**"Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity"**.
+**"Revisiting Continual Learning in Language Models: A Three-Interface Diagnosis of Stability and Plasticity"**.
 
 ## Abstract
 
@@ -15,16 +15,17 @@ Incremental learning is usually evaluated through the final classifier or LM hea
 interface does not indicate where forgetting occurs. A drop in accuracy may reflect representation
 degradation in the backbone, readout mismatch in the head, or both. We argue that BWT and FWT should
 therefore be interpreted as interface-dependent quantities rather than as single model-level
-properties. We study three evaluation interfaces: the sequentially trained head, a newly optimized
-probing classifier, and a classifier-free backbone separability diagnostic based on clustering.
-These interfaces answer different questions: deployed performance, recoverable information under a
-new readout, and representation-level separability. Across CIL experiments with encoder and decoder
-language backbones, plus discriminative-backbone TIL sanity checks, we find that qualitative
-conclusions about forgetting and plasticity change substantially with the evaluation interface.
-Standard heads often indicate severe forgetting, probes often suggest near-complete
-recoverability, and backbone diagnostics suggest intermediate representation changes and a
-stability-plasticity pattern. This pattern is consistent across five clustering algorithms and
-three clustering metrics, suggesting that it is not an artifact of a single diagnostic choice.
+properties. We study three evaluation interfaces: the trained head, which is updated sequentially
+with the backbone; a probe newly trained on frozen backbone features; and a classifier-free backbone
+diagnostic of representation separability. These interfaces answer different questions: deployed
+performance, recoverable information under a new readout, and representation-level separability.
+Across CIL experiments with encoder and decoder language backbones, plus discriminative-backbone TIL
+sanity checks, we find that qualitative conclusions about forgetting and plasticity change
+substantially with the evaluation interface. The trained head often indicates severe forgetting, the
+probe often suggests near-complete recoverability, and the backbone diagnostic suggests intermediate
+representation changes and a stability-plasticity pattern. This pattern holds for clustering-free
+diagnostics such as nearest-class-mean separability and across five clustering algorithms and three
+clustering metrics, suggesting that it is not an artifact of a single diagnostic choice.
 Finally, we use Just LM-Head Tuning (JLT) as a head-only intervention to quantify recoverable
 performance on a fixed incrementally trained backbone. The large gap between standard and
 head-realigned performance suggests that many failures attributed to catastrophic forgetting are
@@ -38,7 +39,7 @@ three evaluation interfaces and a head-only intervention:
 
 | Interface | Frozen | Readout | Measures |
 |---|---|---|---|
-| Sequential head | nothing | classifier / LM head trained during IL | deployed IL performance |
+| Trained head | nothing | classifier / LM head trained during IL | deployed IL performance |
 | Probe | backbone | newly trained linear classifier | information recoverable by a fresh readout |
 | Backbone diagnostic | backbone | none (clustering, or clustering-free NCM / kNN / silhouette / Fisher) | classifier-free representation separability |
 | JLT (Just LM-Head Tuning) | backbone | LM head only | performance recoverable by head re-alignment |
@@ -93,7 +94,7 @@ pip install flash-attn --no-build-isolation
 pip install liger-kernel   # optional
 ```
 
-All experiments in the paper were run on single NVIDIA RTX A5000 (24GB) GPUs.
+All experiments in the paper were run on a server with eight NVIDIA RTX A5000 (24GB) GPUs.
 
 ## Data
 
@@ -145,7 +146,7 @@ Each run writes its log to `experiments/<exp_prefix>-<config>/<timestamp>/train.
 task the log reports the accuracy matrix of each interface, for example
 
 ```
-Result Summary Test After Task 7                      # sequential head (LM head or classifier)
+Result Summary Test After Task 7                      # trained head (LM head or classifier)
 Result Summary Probing After Task 7 (LinearProb)      # probe
 Result Summary Spectral Clustering After Task 7       # backbone diagnostic
 ```
@@ -213,16 +214,16 @@ python main_CL.py --exp_prefix unit \
 
 ## Reproducing the paper
 
-The scripts below run every benchmark stream for one backbone and seed. All experiments in the paper
-were repeated with three seeds.
+The scripts below run every benchmark stream for one backbone and seed. Unless otherwise noted in the
+paper, experiments were repeated with three seeds.
 
 | Script | Paper |
 |---|---|
-| `scripts/run_cil_discriminative.sh <backbone> <seed>` | CIL with BERT/RoBERTa: Base, ER, DER++, CLSER, SEQ* (Figures 2a, 7; Tables 2, 8, 11, 12) |
-| `scripts/run_cil_discriminative.sh <backbone> <seed> TIL` | TIL sanity check (Figures 4-6; Table 10) |
-| `scripts/run_cil_generative.sh <backbone> <seed>` | CIL with Pythia/Qwen/Llama: Base, DER++, CLSER, L2KD, LAMOL_g, LAMOL_t, LAMOL_KD, PCLL, SEQ* (Figures 2b, 3, 10; Tables 2, 9, 11, 12) |
-| `scripts/run_jlt.sh <backbone> <seed>` | task-adaptive JLT (Tables 3, 14, 15) and post-hoc JLT (Table 17) |
-| `scripts/run_diagnostic_units.sh <seed>` | 27 backbone x dataset x method units on Llama-3.2-1B and Qwen3-0.6B, including LoRA and prompt tuning, with feature dumps (Section 5.3, Table 13) |
+| `scripts/run_cil_discriminative.sh <backbone> <seed>` | CIL with BERT/RoBERTa: Base, ER, DER++, CLSER, SEQ* (Figures 2a, 7, 8; Tables 2, 8, 12, 13) |
+| `scripts/run_cil_discriminative.sh <backbone> <seed> TIL` | TIL sanity check (Figures 4-6; Table 11) |
+| `scripts/run_cil_generative.sh <backbone> <seed>` | CIL with Pythia/Qwen/Llama: Base, DER++, CLSER, L2KD, LAMOL_g, LAMOL_t, LAMOL_KD, PCLL, SEQ* (Figures 2b, 3, 9, 10; Tables 2, 9, 12, 13) |
+| `scripts/run_jlt.sh <backbone> <seed>` | task-adaptive JLT (Tables 3, 16-18) and post-hoc JLT (Table 20) |
+| `scripts/run_diagnostic_units.sh <seed>` | 27 backbone x dataset x method units on Llama-3.2-1B and Qwen3-0.6B, including LoRA and prompt tuning, with feature dumps (Sections 5.2-5.3; Tables 10, 14, 15) |
 | `scripts/run_analysis.sh <experiments_dir> <output_dir>` | all offline analyses below |
 
 ```bash
@@ -242,11 +243,11 @@ bash scripts/run_analysis.sh experiments outputs
 
 | Script | Output |
 |---|---|
-| `analysis/online_interfaces.py` | BWT/FWT of the head, probe and clustering interfaces from the training logs, and their BWT-FWT correlation per backbone |
-| `analysis/run_diag.py` | every clustering configuration (algorithm, normalization, cluster count, seed, matching, class balance, sample size) and the clustering-free diagnostics (NCM, kNN-1/10, ridge probe, silhouette, Fisher ratio), computed from the feature dumps |
-| `analysis/export_tables.py` | per-unit BWT/FWT for every interface, BWT-FWT correlations per unit subset, the coupling-free statistics T1 = corr(A, FWT) and T2 = partial corr(BWT, FWT given a_ii), the shared-term permutation null, bootstrap confidence intervals, and the sensitivity grid |
-| `analysis/collect_metrics.py` | A_T, BWT and FWT of the sequential head for every run, and post-hoc JLT against the matching standard run |
-| `analysis/jlt_decomposition.py` | readout-recoverable gap and residual of the JLT decomposition (Tables 3 and 15) |
+| `analysis/online_interfaces.py` | BWT/FWT of the trained head, the probe and the clustering-based backbone diagnostic from the training logs, and their BWT-FWT correlation per backbone |
+| `analysis/run_diag.py` | every clustering configuration (algorithm, normalization, cluster count, seed, matching, class balance, sample size) and the clustering-free diagnostics (NCM, kNN-1/10, silhouette, Fisher ratio), computed from the feature dumps |
+| `analysis/export_tables.py` | per-unit BWT/FWT for every interface, BWT-FWT correlations per unit subset, and the sensitivity grid |
+| `analysis/collect_metrics.py` | A_T, BWT and FWT of the trained head for every run, and post-hoc JLT against the matching standard run |
+| `analysis/jlt_decomposition.py` | readout-recoverable gap and residual of the JLT decomposition (Tables 3 and 18) |
 
 ```bash
 bash scripts/run_analysis.sh experiments outputs
@@ -256,18 +257,17 @@ python tests/test_posthoc_jlt.py   # CPU check of post-hoc JLT (head updated, ba
 ## Notes
 
 - Generation for the LM-head interface uses each backbone's default generation configuration.
-- Llama-3.2-1B and Qwen3-0.6B tie input and output embeddings, so re-aligning the LM head in JLT
-  also updates the input embedding while the head is being adapted. The original weights are
-  restored after evaluation.
-- SEQ* keeps the backbone fixed after the first-task warm-up, so its backbone-level BWT and FWT
-  are zero by construction and it is excluded from the backbone-diagnostic correlation analysis.
-- KLDA (Momeni et al., 2025), reported in Appendix Table 14, is not part of this repository.
+- In JLT, the original LM-head weights are restored after evaluation.
+- SEQ* keeps the backbone fixed after the first-task warm-up, so its BWT-backbone and FWT-backbone
+  are zero by construction and it is excluded from the backbone-level correlation analysis.
+- KLDA (Momeni et al., 2025), reported as KLDA-E in Appendix Tables 16-17, is not part of this
+  repository.
 
 ## Citation
 
 ```bibtex
 @inproceedings{kim2026revisiting,
-  title     = {Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity},
+  title     = {Revisiting Continual Learning in Language Models: A Three-Interface Diagnosis of Stability and Plasticity},
   author    = {Kim, Keuntae and Lee, Beomseok and Kim, Hyunwoo and Choi, Yong Suk},
   booktitle = {Advances in Neural Information Processing Systems},
   year      = {2026}

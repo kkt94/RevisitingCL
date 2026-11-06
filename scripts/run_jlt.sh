@@ -16,7 +16,7 @@ BACKBONE=${1:?backbone}
 SEED=${2:-1}
 NAME=$(basename "$BACKBONE")
 
-# Task-adaptive JLT (Table 3, Table 14)
+# Task-adaptive JLT (Table 3, Tables 16-17)
 for DS in "${DATASETS[@]}"; do
   for M in SEQ_full L2KD LAMOL_KD PCLL; do
     run --exp_prefix "jlt-${NAME}-s${SEED}" \
@@ -27,7 +27,7 @@ for DS in "${DATASETS[@]}"; do
   done
 done
 
-# Post-hoc JLT (Table 17)
+# Post-hoc JLT (Table 20)
 for PAIR in banking77_task7:SEQ_full clinc150_task15:SEQ_full tacred_task8:SEQ_full tacred_task8:DERpp; do
   DS=${PAIR%%:*}; M=${PAIR##*:}
   run --exp_prefix "posthoc-jlt-${NAME}-s${SEED}" \

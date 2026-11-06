@@ -1,6 +1,6 @@
 #!/bin/bash
 # Backbone x dataset x method units used for the clustering-free diagnostics,
-# the sensitivity analysis and the PEFT study (Sections 5.2-5.3, Appendix E.2).
+# the sensitivity analysis and the PEFT study (Sections 5.2-5.3, Appendices B.3 and E.2-E.3).
 # Backbone features of all tasks are dumped at every task boundary, and all
 # diagnostics are computed offline (see scripts/run_analysis.sh).
 #

@@ -4,7 +4,7 @@
 """
 Standard CIL metrics (A_T, BWT, operational FWT) of the sequentially trained
 head for every run, and the comparison between post-hoc JLT runs and the
-matching standard runs (Appendix Table 17).
+matching standard runs (Appendix Table 20).
 
 Usage:
     python analysis/collect_metrics.py --exp_root experiments --out outputs/metrics.csv

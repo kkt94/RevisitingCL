@@ -19,7 +19,7 @@ python analysis/export_tables.py --diag "$OUT/diag.csv" --exp_root "$EXP" --outd
 # 3) head-interface metrics and post-hoc JLT comparison
 python analysis/collect_metrics.py --exp_root "$EXP" --out "$OUT/metrics.csv"
 
-# 4) JLT decomposition from Appendix Table 14
+# 4) JLT decomposition from Appendix Tables 16-17
 python analysis/jlt_decomposition.py | tee "$OUT/jlt_decomposition.txt"
 
 # 5) online interfaces (head, probe, clustering) and their BWT-FWT correlation per backbone

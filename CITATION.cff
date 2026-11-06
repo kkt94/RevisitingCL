@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use this code, please cite the paper below."
-title: "Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity"
+title: "Revisiting Continual Learning in Language Models: A Three-Interface Diagnosis of Stability and Plasticity"
 authors:
   - family-names: Kim
     given-names: Keuntae
@@ -8,7 +8,7 @@ authors:
 license: MIT
 preferred-citation:
   type: conference-paper
-  title: "Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity"
+  title: "Revisiting Continual Learning in Language Models: A Three-Interface Diagnosis of Stability and Plasticity"
   authors:
     - family-names: Kim
       given-names: Keuntae

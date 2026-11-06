@@ -3,8 +3,8 @@
 
 """
 BWT and operational FWT under the interfaces evaluated online during training
-(sequentially trained head, probing classifier, clustering diagnostics), and
-their BWT-FWT correlation per backbone (Figures 2-3, Tables 2 and 10-12).
+(trained head, probe, and clustering-based backbone diagnostics), and
+their BWT-FWT correlation per backbone (Figures 2-3, Tables 2 and 11-13).
 
 Each run's train.log is parsed for
   head        : the last "Result Summary Test After Task k" matrix
