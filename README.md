@@ -11,26 +11,27 @@ This is the official code of the NeurIPS 2026 paper
 
 ## Abstract
 
-Incremental learning is usually evaluated through the final classifier or LM head, but this
-interface does not indicate where forgetting occurs. A drop in accuracy may reflect representation
-degradation in the backbone, readout mismatch in the head, or both. We argue that BWT and FWT should
-therefore be interpreted as interface-dependent quantities rather than as single model-level
-properties. We study three evaluation interfaces: the trained head, which is updated sequentially
-with the backbone; a probe newly trained on frozen backbone features; and a classifier-free backbone
-diagnostic of representation separability. These interfaces answer different questions: deployed
-performance, recoverable information under a new readout, and representation-level separability.
-Across CIL experiments with encoder and decoder language backbones, plus discriminative-backbone TIL
-sanity checks, we find that qualitative conclusions about forgetting and plasticity change
-substantially with the evaluation interface. The trained head often indicates severe forgetting, the
-probe often suggests near-complete recoverability, and the backbone diagnostic suggests intermediate
-representation changes and a stability-plasticity pattern. This pattern holds for clustering-free
-diagnostics such as nearest-class-mean separability and across five clustering algorithms and three
-clustering metrics, suggesting that it is not an artifact of a single diagnostic choice.
-Finally, we use Just LM-Head Tuning (JLT) as a head-only intervention to quantify recoverable
-performance on a fixed incrementally trained backbone. The large gap between standard and
-head-realigned performance suggests that many failures attributed to catastrophic forgetting are
-better understood as head-backbone mismatch plus partial representation drift. Our results call for
-reporting where forgetting is measured, not only how much forgetting is observed.
+Continual learning in language models is commonly studied in the incremental learning (IL) setting,
+where a model learns a sequence of tasks and is evaluated through its final classifier or
+language-model (LM) head. This interface, however, does not indicate where forgetting occurs: a drop
+in accuracy may reflect representation degradation in the backbone, readout mismatch in the head, or
+both. We therefore argue that backward transfer (BWT) and forward transfer (FWT) should be
+interpreted as interface-dependent quantities rather than as single model-level properties. We study
+three evaluation interfaces: the trained head, which is updated sequentially with the backbone; a
+probe newly trained on frozen backbone features; and a classifier-free backbone diagnostic. They
+measure deployed performance, recoverability under a new readout, and representation separability,
+respectively. Across class-incremental experiments with encoder and decoder language backbones, plus
+task-incremental sanity checks, conclusions about forgetting and plasticity change with the
+interface: the trained head often indicates severe forgetting, the probe near-complete
+recoverability, and the backbone diagnostic intermediate representation drift with a consistent
+negative relation between stability and plasticity. This relation holds for clustering-free
+diagnostics such as nearest-class-mean accuracy and across five clustering algorithms and three
+metrics. Finally, Just LM-Head Tuning (JLT), a head-only intervention on a fixed incrementally
+trained backbone, recovers 96-99% of the gap to joint training for replay- and distillation-based
+methods but only about three quarters for plain sequential fine-tuning, suggesting that many
+failures attributed to catastrophic forgetting reflect head-backbone mismatch plus partial
+representation drift. Our results call for reporting where forgetting is measured, not only how
+much.
 
 ## Overview
 
