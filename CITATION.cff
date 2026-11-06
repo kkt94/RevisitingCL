@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the paper below."
+title: "Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity"
+authors:
+  - family-names: Kim
+    given-names: Keuntae
+    affiliation: Hanyang University
+license: MIT
+preferred-citation:
+  type: conference-paper
+  title: "Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity"
+  authors:
+    - family-names: Kim
+      given-names: Keuntae
+    - family-names: Lee
+      given-names: Beomseok
+    - family-names: Kim
+      given-names: Hyunwoo
+    - family-names: Choi
+      given-names: Yong Suk
+  collection-title: "Advances in Neural Information Processing Systems"
+  conference:
+    name: "The Fortieth Annual Conference on Neural Information Processing Systems (NeurIPS 2026)"
+  year: 2026

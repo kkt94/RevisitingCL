@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Experiment outputs
+experiments/
+outputs/
+wandb/
+*.log
+*.out
+*.err
+*.npy
+*.npz
+*.pth
+
+# Data and model weights (see dataset/README.md)
+dataset/*
+!dataset/README.md
+Llama-*/
+Qwen*/
+pythia-*/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

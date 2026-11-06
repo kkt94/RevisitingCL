@@ -1,0 +1,132 @@
+Revisiting Continual Learning: A Three-Interface Diagnosis of Stability and Plasticity
+Copyright (c) 2026 Keuntae Kim
+
+This repository builds on third-party code. The copyright of that code remains
+with its original authors.
+
+===============================================================================
+1. Incremental learning codebase of Zheng et al.
+===============================================================================
+
+Source : https://github.com/zzz47zzz/codebase-for-incremental-learning-with-llm
+Authors: Junhao Zheng, Shengjie Qiu, and Qianli Ma
+Paper  : Junhao Zheng, Shengjie Qiu, and Qianli Ma. Learn or Recall? Revisiting
+         Incremental Learning with Pre-trained Language Models. In Proceedings of
+         the 62nd Annual Meeting of the Association for Computational Linguistics
+         (ACL), 2024.
+
+The following files are derived from this codebase and were modified for the
+present work (training loop, evaluation interfaces, LM-head adaptation,
+backbone loading, and bug fixes):
+
+  main_CL.py
+  models/__init__.py, models/Base.py, models/SEQ.py, models/DERpp.py,
+  models/CLSER.py, models/L2KD.py, models/LAMOL.py, models/LAMOL_KD.py,
+  models/PCLL.py, models/PEFT.py
+  utils/backbone.py, utils/buffer.py, utils/classifier.py, utils/config.py,
+  utils/dataformat_preprocess.py, utils/dataloader.py, utils/dataset.py,
+  utils/download_backbones.py, utils/evaluation.py, utils/factory.py,
+  utils/logger.py, utils/metric.py, utils/optimizer.py, utils/probing.py,
+  utils/prompt.py, utils/wrapmodel.py
+  config/ (method and dataset configuration files)
+  scripts/preprocess_dataset.sh
+
+The upstream repository does not state a license. These files are provided
+here for research reproducibility with attribution to the original authors;
+please refer to the upstream repository for its terms of use.
+
+===============================================================================
+2. Method reference implementations
+===============================================================================
+
+The codebase of Zheng et al. re-implements several continual learning methods
+for language models. As stated in its source files, parts of these
+implementations follow the official code of the respective methods. The
+corresponding files of this repository carry the same references in their
+headers.
+
+  DER++   Buzzega et al., Dark Experience for General Continual Learning:
+          a Strong, Simple Baseline. NeurIPS 2020.
+          https://github.com/aimagelab/mammoth
+          MIT License, Copyright (c) 2020 Pietro Buzzega, Matteo Boschini,
+          Angelo Porrello, Davide Abati, Simone Calderara
+          -> models/DERpp.py
+
+  CLS-ER  Arani et al., Learning Fast, Learning Slow: A General Continual
+          Learning Method based on Complementary Learning System. ICLR 2022.
+          https://github.com/NeurAI-Lab/CLS-ER (built on mammoth)
+          MIT License, Copyright (c) 2020 Pietro Buzzega, Matteo Boschini,
+          Angelo Porrello, Davide Abati, Simone Calderara
+          -> models/CLSER.py (EMA updates of the plastic and stable models)
+
+  LAMOL   Sun et al., LAMOL: LAnguage MOdeling for Lifelong Language
+          Learning. ICLR 2020.
+          https://github.com/jojotenya/LAMOL
+          MIT License, Copyright (c) 2020 jojotenya, Copyright (c) 2020 Daikon-Sun
+          -> models/LAMOL.py, models/LAMOL_KD.py, models/L2KD.py,
+             utils/dataloader.py (pseudo-sample generation and data format)
+
+  L2KD    Chuang et al., Lifelong Language Knowledge Distillation.
+          EMNLP 2020.
+          https://github.com/voidism/L2KD (builds on LAMOL; no license stated)
+          -> models/L2KD.py (word-level distillation)
+
+  PCLL    Zhao et al., Prompt Conditioned VAE: Enhancing Generative Replay
+          for Lifelong Learning in Task-Oriented Dialogue. EMNLP 2022.
+          https://github.com/AlibabaResearch/DAMO-ConvAI/tree/main/pcll
+          MIT License, Copyright (c) 2022 Alibaba Research
+          -> models/PCLL.py, utils/dataloader.py
+
+  VAG     Shao et al., Class-Incremental Learning based on Label
+          Generation. ACL 2023.
+          https://github.com/shaoyijia/VAG (no license stated)
+          -> utils/dataformat_preprocess.py (FewRel/TACRED label mapping)
+
+The MIT License under which the projects above are released reads:
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to
+  deal in the Software without restriction, including without limitation the
+  rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+  sell copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in
+  all copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  IN THE SOFTWARE.
+
+===============================================================================
+3. Original contributions of this repository (MIT License, see LICENSE)
+===============================================================================
+
+  utils/kmeans.py, utils/gmm.py, utils/spectral.py, utils/agglomerative.py,
+  utils/deep_clustering.py  (classifier-free backbone diagnostics)
+  utils/featdump.py         (backbone feature dumps for offline diagnostics)
+  utils/posthoc_jlt.py      (post-hoc Just LM-Head Tuning)
+  analysis/                 (offline diagnostics and statistics)
+  scripts/ (except preprocess_dataset.sh)
+  tests/
+
+together with the modifications made to the files listed in Section 1.
+
+===============================================================================
+4. Libraries, datasets and pretrained models
+===============================================================================
+
+Third-party libraries (PyTorch, Transformers, Accelerate, PEFT, scikit-learn,
+and others listed in requirements.txt) are used as dependencies and are not
+redistributed.
+
+No dataset or model weights are distributed with this repository. The datasets
+(Topic3Datasets: AGNews, DBPedia, Yahoo Answers; CLINC150; Banking77; FewRel;
+TACRED) and pretrained backbones (BERT, RoBERTa, Pythia, Qwen, Llama) are
+subject to their own licenses and terms of use, summarized in Appendix Table 7
+of the paper. TACRED is distributed by the Linguistic Data Consortium
+(LDC2018T24) under the LDC user agreement.
