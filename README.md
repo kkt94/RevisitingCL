@@ -6,12 +6,12 @@
 >
 > \*: Equal contribution, &dagger;: Corresponding author
 
-**[[Paper (PDF)]](paper/RevisitingCL_NeurIPS2026.pdf)**
+**[[Paper (arXiv)]](https://arxiv.org/abs/2611.30151)**
 
 This is the official code of the NeurIPS 2026 paper
 **"Revisiting Continual Learning in Language Models: A Three-Interface Diagnosis of Stability and Plasticity"**.
-The camera-ready paper is included in this repository as
-[paper/RevisitingCL_NeurIPS2026.pdf](paper/RevisitingCL_NeurIPS2026.pdf).
+The paper is available on arXiv:
+[arXiv:2611.30151](https://arxiv.org/abs/2611.30151).
 
 ## Abstract
 
@@ -81,7 +81,6 @@ config/{CIL,TIL}/{discriminative,generative}_backbones/<stream>/<method>.yaml
 scripts/                    experiment and analysis scripts
 analysis/                   offline diagnostics and statistics
 tests/                      unit test for post-hoc JLT
-paper/                      camera-ready paper (PDF)
 dataset/                    raw data and task streams (not distributed, see dataset/README.md)
 ```
 
